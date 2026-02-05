@@ -83,11 +83,11 @@ This usually happens with:
 >[!Important]
 > **Path Traversal allows attackers to read arbitrary files, while LFI allows attackers to include and potentially execute local files; LFI is more dangerous because it runs files in an execution context and can reach RCE using wrappers.**
 
-`
+```
 Vulnerable Code
 
 include($_GET['page'] . ".php");
-`
+```
 
 <img width="645" height="283" alt="image" src="https://github.com/user-attachments/assets/78ec0843-89c0-466f-9d98-af191e502fca" />
 
