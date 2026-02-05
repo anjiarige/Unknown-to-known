@@ -103,5 +103,6 @@ Usage:
 
 📌 Wrappers are primarily dangerous in PHP
 
-
+## Insecure deserialization:
+Insecure deserialization occurs when untrusted data is deserialized into live objects, allowing attackers to trigger existing code paths (gadget chains) that can automatically execute code, often leading directly to RCE.
 
