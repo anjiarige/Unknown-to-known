@@ -156,10 +156,75 @@ url=http://localhost/admin
 The server made a request to **itself** — and since localhost requests bypass firewalls and authentication that's only enforced for external traffic, the attacker gets access to the admin panel.
 
 
+# NMAP
+Full port scan — `nmap -p- <target>`
+Service/version detection — `nmap -sV <target>`
+Enumerate ciphers & Check SSL certificate details: `nmap --script ssl-enum-ciphers,ssl-cert -p 443 <target>`
+WAF detection script — `nmap --script http-waf-detect -p 80,443 <target>`
 
 
+# Burp Suite BApp Store - Useful Extensions for Web Application Security Testing
 
+## Must-Install (Always Use)
 
+| # | Extension Name | Use Case | When to Use |
+|---|---------------|----------|-------------|
+| 1 | **ActiveScan++** | Extends Burp's active scanner with additional checks like host header injection, cache poisoning, and XML injection. | Every engagement — improves default scan coverage significantly. |
+| 2 | **Autorize** | Replays requests with low-privilege session tokens to detect broken access control, IDOR, and privilege escalation. | Every engagement with authentication and role-based access. |
+| 3 | **Logger++** | Advanced filterable logging of all Burp traffic. Search historical requests/responses with complex filters. | Every engagement — helps track and analyze all traffic efficiently. |
+| 4 | **Param Miner** | Discovers hidden/unlinked parameters in requests. Finds web cache poisoning vectors, debug params, and secret API fields. | Every engagement — uncovers attack surface not visible in the UI. |
+| 5 | **Collaborator Everywhere** | Injects Burp Collaborator payloads into headers (Referer, X-Forwarded-For, etc.) to find blind SSRF, OOB XXE, and blind injections. | Every engagement — catches blind vulnerabilities with no visible response. |
+| 6 | **Turbo Intruder** | High-performance request sender using Python scripting. Sends thousands of requests/sec. | Race condition testing, brute-forcing tokens, credential stuffing at scale. |
+
+## Install Based on Target
+
+| # | Extension Name | Use Case | When to Use |
+|---|---------------|----------|-------------|
+| 7 | **JSON Web Tokens (JWT Editor)** | View, edit, and attack JWTs. Tests algorithm confusion (RS256→HS256), "none" algorithm bypass, and JWK injection. | When the target uses JWT-based authentication. |
+| 8 | **InQL (GraphQL Scanner)** | Performs GraphQL introspection, maps schemas, and generates queries automatically. Finds hidden mutations and sensitive fields. | When the target uses GraphQL APIs. |
+| 9 | **Upload Scanner** | Tests file upload features with polyglot files, content-type manipulation, and extension bypass techniques. | When the target has any file upload functionality. |
+| 10 | **HTTP Request Smuggler** | Tests for HTTP request smuggling (CL.TE, TE.CL, TE.TE) vulnerabilities. | When a reverse proxy, CDN, or load balancer is in front of the app. |
+| 11 | **CORS* (Additional CORS Checks)** | Tests for CORS misconfigurations by injecting various Origin headers. Catches wildcard, null origin, and reflected origin issues. | When the target has cross-origin API calls or uses CORS headers. |
+| 12 | **WAF Detect / WAFNinja** | Identifies and fingerprints Web Application Firewalls to tailor bypass payloads. | When a WAF is suspected or confirmed in front of the target. |
+
+## Nice to Have (Productivity Boosters)
+
+| # | Extension Name | Use Case | When to Use |
+|---|---------------|----------|-------------|
+| 13 | **Hackvertor** | Tag-based encoding/decoding tool. Chain transformations (Base64, URL, Hex, Hash) directly inside requests. | When payloads need dynamic encoding/decoding before submission. |
+| 14 | **Retire.js** | Flags known vulnerable JavaScript libraries (jQuery, Angular, etc.) and links to relevant CVEs. | Every engagement — passive check with zero effort. |
+| 15 | **Reflected Parameters** | Highlights parameters whose values are reflected in responses. Saves time hunting for XSS. | XSS testing — pinpoints exactly where to focus. |
+| 16 | **JS Link Finder** | Parses JavaScript files to extract hidden endpoints, API paths, and internal URLs. | Recon phase — discovers hidden attack surface in JS files. |
+| 17 | **Content Type Converter** | Converts request bodies between JSON, XML, URL params, etc. Bypasses input validation or WAF rules. | When testing input handling across different content types. |
+| 18 | **Error Message Checks** | Passively scans for verbose error messages, stack traces, DB errors, and debug info in responses. | Every engagement — passive detection of information disclosure. |
+| 19 | **Software Vulnerability Scanner (Vulners)** | Analyzes server banners and fingerprints, cross-references against Vulners DB for known CVEs. | When identifying outdated server software (Apache, Nginx, PHP). |
+| 20 | **IP Rotate** | Rotates source IP using cloud provider APIs to bypass rate-limiting or IP-based blocking. | When target has aggressive rate-limiting or IP-blocking mechanisms. |
+
+---
+
+## Quick Reference: Extension by Vulnerability Type
+
+| Vulnerability Type | Recommended Extensions |
+|--------------------|----------------------|
+| **Broken Access Control / IDOR** | Autorize |
+| **XSS (Cross-Site Scripting)** | Reflected Parameters, ActiveScan++ |
+| **SSRF (Server-Side Request Forgery)** | Collaborator Everywhere |
+| **SQL Injection / Blind Injection** | Collaborator Everywhere, ActiveScan++ |
+| **JWT Attacks** | JWT Editor |
+| **GraphQL Vulnerabilities** | InQL |
+| **File Upload Bypass** | Upload Scanner |
+| **HTTP Request Smuggling** | HTTP Request Smuggler |
+| **CORS Misconfiguration** | CORS* |
+| **Cache Poisoning** | Param Miner, ActiveScan++ |
+| **Race Conditions** | Turbo Intruder |
+| **Outdated Libraries / CVEs** | Retire.js, Vulners Scanner |
+| **Hidden Endpoints / Recon** | JS Link Finder, Param Miner |
+| **WAF Bypass** | WAF Detect, Content Type Converter |
+| **Information Disclosure** | Error Message Checks |
+
+---
+
+> **Tip:** Start every engagement by installing the "Must-Install" tier, then add extensions from the other tiers based on the target's tech stack and scope.
 
 
 
