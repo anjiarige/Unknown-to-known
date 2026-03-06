@@ -224,7 +224,6 @@ WAF detection script — `nmap --script http-waf-detect -p 80,443 <target>`
 
 ---
 
-> **Tip:** Start every engagement by installing the "Must-Install" tier, then add extensions from the other tiers based on the target's tech stack and scope.
 
 
 
