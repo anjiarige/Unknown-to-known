@@ -104,6 +104,22 @@ Usage:
 📌 Wrappers are primarily dangerous in PHP
 
 ## Insecure deserialization:
-Insecure deserialization occurs when untrusted data is deserialized into live objects, allowing attackers to trigger existing code paths (gadget chains) that can automatically execute code, often leading directly to RCE.
+### What Is Serialization / Deserialization?
+- `Serialization` is the process of converting an object in memory (like a Java object, Python dict, or PHP class instance) into a format that can be stored or transmitted — such as a byte stream, JSON, XML, or a language-specific format.
+- `Deserialization` is the reverse: taking that serialized data and reconstructing it back into a live object in memory.
+
+The vulnerability arises when an application deserializes untrusted data without validation. An attacker can craft a malicious serialized object that, when deserialized, triggers unintended actions like remote code execution, privilege escalation, or data tampering.
+
+### Why Is It Dangerous?
+When an application deserializes data, it doesn't just restore values — it can reconstruct entire objects, invoke constructors, and trigger special methods `(like __wakeup() in PHP`, `readObject() in Java`, or `__reduce__() in Python)`. Attackers exploit these "**magic methods**" to chain together existing classes in the application (called gadget chains) to achieve code execution.
+
+### How to Prevent It
+- Never deserialize untrusted data — this is the golden rule
+- Use safe data formats like JSON instead of language-native serialization (JSON doesn't carry code, only data)
+- Integrity checks — sign serialized objects with HMAC so tampering is detected
+- Allowlist classes — if you must deserialize, restrict which classes can be instantiated (Java's ObjectInputFilter, for example)
+- Isolate deserialization — run it in a low-privilege, sandboxed environment
+- Monitor — log deserialization failures and watch for common exploit signatures
+
 
 `Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
