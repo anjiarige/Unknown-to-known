@@ -121,5 +121,54 @@ When an application deserializes data, it doesn't just restore values — it can
 - Isolate deserialization — run it in a low-privilege, sandboxed environment
 - Monitor — log deserialization failures and watch for common exploit signatures
 
+# SSRF
+SSRF is an attack where you trick the server into making HTTP requests (or other protocol requests) on your behalf. Instead of you directly accessing an internal resource (which you can't), you make the server fetch it for you — because the server sits inside the trusted network.
+`The core problem: the server trusts itself and its internal network, and the attacker abuses this trust by controlling what URLs the server fetches.`
+
+`
+Without SSRF:
+Attacker → [Firewall] → BLOCKED → Internal Services
+
+With SSRF:
+Attacker → Vulnerable Server → Internal Services (no firewall between them)
+`
+## The Core Mechanism
+- Normal Flow:
+User → Sends URL to app: "https://example.com/image.png"
+Server → Fetches the URL → Returns the content to user
+(Everything is fine — it's a public URL)
+POST /fetch-image
+url=https://example.com/photo.jpg
+→ Server downloads the image and displays it
+
+- SSRF Attack Flow:
+User → Sends URL to app: "http://169.254.169.254/latest/meta-data/"
+Server → Fetches the URL → Returns cloud credentials to user
+(Server accessed internal cloud metadata that the attacker can't reach directly)
+
+User → Sends URL to app: "http://localhost:8080/admin"
+Server → Fetches the URL → Returns admin panel contents
+(Server accessed its own admin panel that's not exposed externally)
+POST /fetch-image
+url=http://localhost/admin
+→ Server fetches its own admin panel and returns the content
+
+The server made a request to **itself** — and since localhost requests bypass firewalls and authentication that's only enforced for external traffic, the attacker gets access to the admin panel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 `Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
