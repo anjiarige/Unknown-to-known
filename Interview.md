@@ -103,8 +103,7 @@ Usage:
 
 📌 Wrappers are primarily dangerous in PHP
 
-`Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
-
 ## Insecure deserialization:
 Insecure deserialization occurs when untrusted data is deserialized into live objects, allowing attackers to trigger existing code paths (gadget chains) that can automatically execute code, often leading directly to RCE.
 
+`Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
