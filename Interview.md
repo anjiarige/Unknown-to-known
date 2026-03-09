@@ -105,7 +105,7 @@ Usage:
 
 ---
 
-### The Setup
+### The Setup [LFI Example]
 A vulnerable PHP website has code like this: `<?php include($_GET['page']); ?>`
 And the URL looks like: `http://target.com/index.php?page=home.php`
 - Step 1 — Poison the log file
