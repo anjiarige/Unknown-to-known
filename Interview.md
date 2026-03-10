@@ -123,6 +123,40 @@ You now have remote code execution. You can change `cmd=whoam` to `cmd=id`, `cmd
 That's the key — a normal path traversal would show you the raw log file text including the `<?php ... ?>` as plain text. But with LFI, the server treats it as code and runs it.
 
 ---
+# What is SSRF?
+`SSRF is when you trick the server into making HTTP requests on your behalf`. Instead of you directly accessing something, you make the server do it for you. This is dangerous because the server often has access to internal resources that you can't reach from the outside.
+
+## Why is it dangerous?
+Think of it like this. You're standing outside a building (the internet). There's a locked door (firewall). You can't get in. But there's an employee (the server) who can go inside freely. With SSRF, you trick that employee into going inside, grabbing information, and bringing it back to you.
+
+Examples:
+### Basic SSRF
+A website has a feature that fetches a URL and shows you a preview. Like a "check if website is alive" tool:
+http://target.com/fetch?url=http://google.com
+The server-side code looks something like:
+<?php echo file_get_contents($_GET['url']); ?>
+The server takes your URL, fetches it, and returns the content. Works fine for normal use. But what if you change the URL to:
+http://target.com/fetch?url=http://127.0.0.1:8080/admin
+Now the server is making a request to itself on 127.0.0.1 (localhost). The admin panel might be blocked from the outside, but the server can access it because it's making the request locally. The response comes back to you, and you can now see the admin panel.
+
+### SSRF to steal cloud credentials (very common and critical)
+Cloud providers like AWS, GCP, and Azure run a metadata service on a special internal IP 169.254.169.254. This service contains sensitive information like access keys, tokens, and secrets. Only the server itself can access this IP.
+http://target.com/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/
+The server makes the request to the metadata service, grabs the AWS access keys, and returns them to you. Now you have:
+- AWS Access Key ID
+- Secret Access Key
+- Session Token
+- 
+With these, you can log into their AWS account and access S3 buckets, databases, EC2 instances — basically their entire cloud infrastructure. This is how the `Capital One breach in 2019 ` happened. An attacker used SSRF to steal AWS credentials from the metadata service.
+
+### Bypassing SSRF filters
+Many apps try to block SSRF by checking if the URL contains 127.0.0.1 or localhost. But there are many bypasses:
+Using decimal IP: http://target.com/fetch?url=http://2130706433:8080/admin (2130706433 is 127.0.0.1 in decimal)
+Using IPv6: http://target.com/fetch?url=http://[::1]:8080/admin (::1 is localhost in IPv6)
+Using a redirect: You host a page on your own server that redirects to 127.0.0.1. The app checks your external URL, says it's fine, but when the server follows the redirect, it ends up hitting localhost.
+Using DNS rebinding: You set up a domain that first resolves to your external IP (passes the check), then resolves to 127.0.0.1 (when the server actually makes the request).
+
+---
 
 ## Insecure deserialization:
 ### What Is Serialization / Deserialization?
