@@ -146,7 +146,6 @@ The server makes the request to the metadata service, grabs the AWS access keys,
 - AWS Access Key ID
 - Secret Access Key
 - Session Token
-- 
 With these, you can log into their AWS account and access S3 buckets, databases, EC2 instances — basically their entire cloud infrastructure. This is how the `Capital One breach in 2019 ` happened. An attacker used SSRF to steal AWS credentials from the metadata service.
 
 ### Bypassing SSRF filters
