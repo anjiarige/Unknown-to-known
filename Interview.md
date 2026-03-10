@@ -155,26 +155,6 @@ Using IPv6: http://target.com/fetch?url=http://[::1]:8080/admin (::1 is localhos
 Using a redirect: You host a page on your own server that redirects to 127.0.0.1. The app checks your external URL, says it's fine, but when the server follows the redirect, it ends up hitting localhost.
 Using DNS rebinding: You set up a domain that first resolves to your external IP (passes the check), then resolves to 127.0.0.1 (when the server actually makes the request).
 
----
-
-## Insecure deserialization:
-### What Is Serialization / Deserialization?
-- `Serialization` is the process of converting an object in memory (like a Java object, Python dict, or PHP class instance) into a format that can be stored or transmitted — such as a byte stream, JSON, XML, or a language-specific format.
-- `Deserialization` is the reverse: taking that serialized data and reconstructing it back into a live object in memory.
-
-The vulnerability arises when an application deserializes untrusted data without validation. An attacker can craft a malicious serialized object that, when deserialized, triggers unintended actions like remote code execution, privilege escalation, or data tampering.
-
-### Why Is It Dangerous?
-When an application deserializes data, it doesn't just restore values — it can reconstruct entire objects, invoke constructors, and trigger special methods `(like __wakeup() in PHP`, `readObject() in Java`, or `__reduce__() in Python)`. Attackers exploit these "**magic methods**" to chain together existing classes in the application (called gadget chains) to achieve code execution.
-
-### How to Prevent It
-- Never deserialize untrusted data — this is the golden rule
-- Use safe data formats like JSON instead of language-native serialization (JSON doesn't carry code, only data)
-- Integrity checks — sign serialized objects with HMAC so tampering is detected
-- Allowlist classes — if you must deserialize, restrict which classes can be instantiated (Java's ObjectInputFilter, for example)
-- Isolate deserialization — run it in a low-privilege, sandboxed environment
-- Monitor — log deserialization failures and watch for common exploit signatures
-
 # SSRF
 SSRF is an attack where you trick the server into making HTTP requests (or other protocol requests) on your behalf. Instead of you directly accessing an internal resource (which you can't), you make the server fetch it for you — because the server sits inside the trusted network.
 `The core problem: the server trusts itself and its internal network, and the attacker abuses this trust by controlling what URLs the server fetches.`
@@ -209,13 +189,29 @@ url=http://localhost/admin
 
 The server made a request to **itself** — and since localhost requests bypass firewalls and authentication that's only enforced for external traffic, the attacker gets access to the admin panel.
 
+## Insecure deserialization:
+### What Is Serialization / Deserialization?
+- `Serialization` is the process of converting an object in memory (like a Java object, Python dict, or PHP class instance) into a format that can be stored or transmitted — such as a byte stream, JSON, XML, or a language-specific format.
+- `Deserialization` is the reverse: taking that serialized data and reconstructing it back into a live object in memory.
+
+The vulnerability arises when an application deserializes untrusted data without validation. An attacker can craft a malicious serialized object that, when deserialized, triggers unintended actions like remote code execution, privilege escalation, or data tampering.
+
+### Why Is It Dangerous?
+When an application deserializes data, it doesn't just restore values — it can reconstruct entire objects, invoke constructors, and trigger special methods `(like __wakeup() in PHP`, `readObject() in Java`, or `__reduce__() in Python)`. Attackers exploit these "**magic methods**" to chain together existing classes in the application (called gadget chains) to achieve code execution.
+
+### How to Prevent It
+- Never deserialize untrusted data — this is the golden rule
+- Use safe data formats like JSON instead of language-native serialization (JSON doesn't carry code, only data)
+- Integrity checks — sign serialized objects with HMAC so tampering is detected
+- Allowlist classes — if you must deserialize, restrict which classes can be instantiated (Java's ObjectInputFilter, for example)
+- Isolate deserialization — run it in a low-privilege, sandboxed environment
+- Monitor — log deserialization failures and watch for common exploit signatures
 
 # NMAP
 Full port scan — `nmap -p- <target>`
 Service/version detection — `nmap -sV <target>`
 Enumerate ciphers & Check SSL certificate details: `nmap --script ssl-enum-ciphers,ssl-cert -p 443 <target>`
 WAF detection script — `nmap --script http-waf-detect -p 80,443 <target>`
-
 
 # Burp Suite BApp Store - Useful Extensions for Web Application Security Testing
 
