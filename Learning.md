@@ -345,6 +345,8 @@ Access-Control-Allow-Origin: *
 Access-Control-Allow-Credentials: true   
 => BROWSER WILL BLOCK THIS COMBINATION!
 
+<img width="1252" height="615" alt="image" src="https://github.com/user-attachments/assets/ba270fd8-dd05-419d-bba3-f2abc7918fa2" />
+
 **To simplify, the RFC defines, in case the server got a malformed origin which cannot be serialized, set the string “null” as the Origin header**
 
 <img width="1600" height="627" alt="image" src="https://github.com/user-attachments/assets/1058cb24-afa1-4cdf-b86c-5993ce87f61b" />
