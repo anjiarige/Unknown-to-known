@@ -335,3 +335,27 @@ You're calling that phone. The target picks up and gives you a bash shell.
 
 
 `Think of it this way: XXE abuses a parser, SSRF abuses a fetcher, Path Traversal abuses a file reader, LFI abuses a file executor (locally), and RFI abuses a file executor (remotely).`
+
+## CORS
+
+<img width="1342" height="667" alt="image" src="https://github.com/user-attachments/assets/c3113d61-1db9-423a-b70d-97ced53d269a" />
+
+CORS — Wildcard + Credentials Interaction = BLOCKED
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true   
+=> BROWSER WILL BLOCK THIS COMBINATION!
+
+**To simplify, the RFC defines, in case the server got a malformed origin which cannot be serialized, set the string “null” as the Origin header**
+
+<img width="1600" height="627" alt="image" src="https://github.com/user-attachments/assets/1058cb24-afa1-4cdf-b86c-5993ce87f61b" />
+
+
+
+
+
+
+
+
+
+
+
